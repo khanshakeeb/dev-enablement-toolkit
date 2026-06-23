@@ -1,5 +1,7 @@
+# pyrefly: ignore [missing-import]
 import click
 from modules.k8s_health import check_health
+from modules.github_actions import trigger_workflow
 
 @click.group()
 def cli():
@@ -13,10 +15,10 @@ def health(namespace):
     check_health(namespace)
 
 @cli.command()
-def trigger():
+@click.option("--workflow", "-w", default="ci.yml", help="Workflow file to trigger")
+def trigger(workflow):
     """Trigger a GitHub Actions workflow."""
-    click.echo("Triggering workflow...")
-
+    trigger_workflow(workflow)
 @cli.command()
 def report():
     """Generate deployment report."""
