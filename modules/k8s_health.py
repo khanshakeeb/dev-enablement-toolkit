@@ -4,13 +4,14 @@ from rich.table import Table
 
 console = Console()
 
+
 def check_health(namespace="default"):
     try:
         config.load_kube_config()
         v1 = client.CoreV1Api()
-        
+
         pods = v1.list_namespaced_pod(namespace=namespace)
-        
+
         table = Table(title=f"Cluster Health — Namespace: {namespace}")
         table.add_column("Pod", style="cyan")
         table.add_column("Status", style="green")
@@ -26,10 +27,11 @@ def check_health(namespace="default"):
 
             for container in pod.status.container_statuses or []:
                 restarts += container.restart_count
-                
+
                 if container.state.waiting:
                     reason = container.state.waiting.reason
-                    if reason in ["CrashLoopBackOff", "ImagePullBackOff", "Error"]:
+                    if reason in ["CrashLoopBackOff",
+                                  "ImagePullBackOff", "Error"]:
                         issues.append(reason)
 
             status_color = "green" if phase == "Running" else "red"

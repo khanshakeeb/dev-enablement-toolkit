@@ -3,10 +3,10 @@ name: CI Pipeline
 on:
   push:
     branches: [master]
-  workflow_dispatch:  # This allows manual triggering via API
+  workflow_dispatch:
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -16,10 +16,40 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
+      - name: Install linter
+        run: pip install flake8
 
-      - name: Run health check (smoke test)
-        run: |
-          echo "Smoke test passed"
+      - name: Run linter
+        run: flake8 cli.py modules/ --max-line-length=120
+
+  build:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Smoke test — help command
+        run: python cli.py --help
+
+      - name: Smoke test — health command loads
+        run: python -c "from modules.k8s_health import check_health; print('Import OK')"
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build -t dev-enablement-toolkit .
+
+      - name: Smoke test Docker image
+        run: docker run dev-enablement-toolkit --help
