@@ -87,9 +87,8 @@ Every push to `master` triggers a 3-stage GitHub Actions pipeline:
 
 ## Project Structure
 
-dev-enablement-toolkit/
 ```
-
+dev-enablement-toolkit/
 ├── cli.py                      # CLI entry point
 
 ├── modules/
